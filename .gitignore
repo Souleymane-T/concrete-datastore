@@ -122,4 +122,4 @@ Makefile
 
 concrete_datastore/settings/media/
 concrete_datastore/settings/static/
-
+development/media/
