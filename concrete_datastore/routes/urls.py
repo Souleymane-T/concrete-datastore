@@ -56,7 +56,7 @@ if settings.USE_CORE_AUTOMATION:
     # ImportError if the import fails
     import ns_core
     urlpatterns += [
-        re_path(r'^core/', include('ns_core.coreApp.urls', namespace='core'))
+        re_path(r'^core/', include('ns_core.coreApp.urls'))
     ]
 
 
