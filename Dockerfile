@@ -1,0 +1,23 @@
+# pull official base image
+FROM python:3-stretch
+
+RUN mkdir -p /concrete-datastore
+RUN mkdir -p /app
+
+WORKDIR /concrete-datastore
+COPY . .
+
+RUN pip install --upgrade pip
+RUN pip install gunicorn
+RUN pip install -e ".[full]"
+
+ENV PATH="/concrete-datastore/bin:${PATH}"
+
+ENV GUNICORN_TIMEOUT=300
+ENV GUNICORN_GRACEFUL_TIMEOUT=30
+ENV GUNICORN_LOG_LEVEL=info
+
+ENV DJANGO_SETTINGS_MODULE=development.settings
+
+
+
