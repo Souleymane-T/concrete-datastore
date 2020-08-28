@@ -11,13 +11,14 @@ RUN pip install --upgrade pip
 RUN pip install gunicorn
 RUN pip install -e ".[full]"
 
-ENV PATH="/concrete-datastore/bin:${PATH}"
+VOLUME  ["/concrete-datastore/concrete_datastore/concrete/migrations", "/concrete-datastore/development/static"]
 
+ENV PATH="/concrete-datastore/bin:${PATH}"
 ENV GUNICORN_TIMEOUT=300
 ENV GUNICORN_GRACEFUL_TIMEOUT=30
 ENV GUNICORN_LOG_LEVEL=info
-
 ENV DJANGO_SETTINGS_MODULE=development.settings
+
 
 CMD gunicorn \
     --timeout $GUNICORN_TIMEOUT \
