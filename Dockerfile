@@ -19,5 +19,14 @@ ENV GUNICORN_LOG_LEVEL=info
 
 ENV DJANGO_SETTINGS_MODULE=development.settings
 
+CMD gunicorn \
+    --timeout $GUNICORN_TIMEOUT \
+    --graceful-timeout $GUNICORN_GRACEFUL_TIMEOUT \
+    --bind=0.0.0.0:5000 \
+    --workers=1 \
+    --log-level $GUNICORN_LOG_LEVEL \
+    development.wsgi
+
+
 
 
