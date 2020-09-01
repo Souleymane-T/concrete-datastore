@@ -1,7 +1,5 @@
 # pull official base image
-FROM python:3-stretch
-
-ENV PATH="/concrete-datastore/bin:${PATH}"
+FROM python:3.6-stretch
 
 RUN mkdir -p /concrete-datastore
 RUN mkdir -p /app
@@ -9,13 +7,14 @@ RUN mkdir -p /app
 WORKDIR /concrete-datastore
 COPY . .
 
-RUN /usr/bin/python3 -m venv /concrete-datastore/env
+RUN python3.6 -m venv /concrete-datastore/env
 
-RUN pip install --upgrade pip
-RUN pip install --upgrade setuptools
-RUN pip install gunicorn
-RUN pip install -e ".[full]"
+RUN /concrete-datastore/env/bin/pip install --upgrade pip
+RUN /concrete-datastore/env/bin/pip install --upgrade setuptools
+RUN /concrete-datastore/env/bin/pip install gunicorn
+RUN /concrete-datastore/env/bin/pip install -e ".[full]"
 
+ENV PATH="/concrete-datastore/env/bin:${PATH}"
 VOLUME  ["/concrete-datastore/concrete_datastore/concrete/migrations", "/concrete-datastore/development/static"]
 
 ENV GUNICORN_TIMEOUT=300
