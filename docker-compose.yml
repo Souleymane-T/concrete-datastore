@@ -1,0 +1,13 @@
+version: '3'
+services:
+  web:
+    build: .
+    restart: unless-stopped
+    command: bash -c "concrete-datastore makemigrations && concrete-datastore migrate && concrete-datastore collectstatic --noinput && concrete-datastore create_superuser --password test test@netsach.com && gunicorn development.wsgi --bind 0.0.0.0:8000"
+    ports:
+      - 8000:8000
+    depends_on:
+      - postgres
+  postgres:
+    restart: unless-stopped
+    image: postgres:12.0-alpine

@@ -8,23 +8,31 @@ import yaml
 logger = logging.getLogger('concrete_datastore')
 
 
-def load_datamodel(datamodel_path='current-datamodel.meta'):
+def get_metamodel_definition(metamodel):
+    try:
+        #:  Try to load datamodel with 'yaml.safe_load'.
+        #:  This method loads both yaml and json files
+        return yaml.safe_load(metamodel)
+    except yaml.scanner.ScannerError:
+        message = (
+            f"Unable to parse datamodel file '{datamodel_path}'.\n"
+            "Please check that you specified the right filename"
+        )
+        logger.error(message)
+        sys.exit(1)
+
+
+def load_datamodel(
+    datamodel_path='current-datamodel.meta', datamodel_content=None
+):
+    if datamodel_content:
+        return get_metamodel_definition(datamodel_content)
 
     datamodel_path = os.getenv('DATAMODEL_FILE') or datamodel_path
 
     try:
         with open(datamodel_path, "r") as f:
-            try:
-                #:  Try to load datamodel with 'yaml.safe_load'.
-                #:  This method loads both yaml and json files
-                meta_model_definitions = yaml.safe_load(f)
-            except yaml.scanner.ScannerError:
-                message = (
-                    f"Unable to parse datamodel file '{datamodel_path}'.\n"
-                    "Please check that you specified the right filename"
-                )
-                logger.error(message)
-                sys.exit(1)
+            meta_model_definitions = get_metamodel_definition(f)
     except IOError:
         message = (
             "You did not define a datamodel.\n"

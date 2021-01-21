@@ -42,7 +42,9 @@ DATABASES = {
     }
 }
 
-MIGRATION_MODULES = {'concrete': 'concrete_datastore.concrete.migrations'}
+MIGRATION_MODULES = os.environ.get(
+    "MIGRATION_MODULES", {'concrete': 'concrete_datastore.concrete.migrations'}
+)
 
 # Email
 EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
@@ -58,7 +60,8 @@ PORT = "8000"
 META_MODEL_DEFINITIONS = load_datamodel(
     datamodel_path=os.path.join(
         PROJECT_ROOT, 'datamodel/current-datamodel.json'
-    )
+    ),
+    datamodel_content=os.environ.get('DATAMODEL_CONTENT', None),
 )
 
 DISABLED_MODELS = ()
