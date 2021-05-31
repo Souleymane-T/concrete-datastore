@@ -62,18 +62,19 @@ class FilterDistanceBackend(BaseFilterBackend, CustomShemaOperationParameters):
     def remove_from_queryset(self, view):
         #: Remove PointField field from filterset_fields because
         #: they cannot be filtered with the other filter backends
-        filterset_fields = getattr(view, 'filterset_fields', ())
-        new_filterset_fields = tuple(
-            filter_field
-            for filter_field in filterset_fields
-            if (
-                view.model_class._meta.get_field(
-                    filter_field
-                ).get_internal_type()
-                != 'PointField'
-            )
-        )
-        setattr(view, 'filterset_fields', new_filterset_fields)
+        # filterset_fields = getattr(view, 'filterset_fields', ())
+        # new_filterset_fields = tuple(
+        #     filter_field
+        #     for filter_field in filterset_fields
+        #     if (
+        #         view.model_class._meta.get_field(
+        #             filter_field
+        #         ).get_internal_type()
+        #         != 'PointField'
+        #     )
+        # )
+        # setattr(view, 'filterset_fields', new_filterset_fields)
+        pass
 
     def get_schema_operation_parameters(self, view):
         params = [
@@ -189,7 +190,7 @@ class FilterSupportingOrBackend(
             }
             for field_name in getattr(view, 'filterset_fields', ())
             if type(view.model_class._meta.get_field(field_name))
-            != ManyToManyField
+            != (ManyToManyField, ForeignKey)
         ]
         return self.return_if_not_details(view=view, value=params)
 
@@ -642,3 +643,51 @@ class FilterSupportingManyToMany(
             return queryset
 
         return queryset.filter(q_object).distinct()
+
+
+class FilterSupportingForeignKeyModel(
+    BaseFilterBackend, CustomShemaOperationParameters
+):
+    def get_schema_operation_parameters(self, view):
+        params = [
+            {
+                'name': f'{field_name}__in',
+                'required': False,
+                'description': 'different model to filter on',
+                'in': 'query',
+                'schema': {'type': 'string'},
+            }
+            for field_name in getattr(view, 'filterset_fields', ())
+            if type(view.model_class._meta.get_field(field_name)) in ForeignKey
+        ]
+        return self.return_if_not_details(view=view, value=params)
+
+    def filter_queryset(self, request, queryset, view):
+        query_params = request.query_params
+        filterset_fields = getattr(view, 'filterset_fields', ())
+        q_object = None
+
+        for param in query_params:
+
+            if not param.endswith('__in'):
+                continue
+            field_name = param.replace('__in', '')
+            if field_name not in filterset_fields:
+                continue
+
+            param_value = True if query_params.get(param) in 'true' else False
+
+            cleaned_param_type = queryset.model._meta.get_field(field_name)
+            if not type(cleaned_param_type) == ForeignKey:
+                continue
+
+            custom_filter = {param: param_value}
+            if q_object is None:
+                q_object = Q(**custom_filter)
+            else:
+                q_object &= Q(**custom_filter)
+
+        if q_object is None:
+            return queryset
+
+        return queryset.filter(q_object)
