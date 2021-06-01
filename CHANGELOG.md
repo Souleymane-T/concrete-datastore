@@ -4,7 +4,7 @@
 
 ### Added
 
-- nothing added
+- Allow filtering against foreign key fields
 
 ### Changed
 
